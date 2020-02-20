@@ -13,6 +13,7 @@ type Node struct{
 	Ring 		bool
 	kill 		chan struct{}
 	Lock		sync.Mutex
+	Ip			string
 }
 
 // Nothing will do nothing
