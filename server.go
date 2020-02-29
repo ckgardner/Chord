@@ -45,10 +45,5 @@ func call(address string, method string, request interface{}, reply interface{})
 
 	defer client.Close()
 
-	if err = client.Call(method, request, reply); err != nil {
-		log.Printf("client.Call %s: %v", method, err)
-		return err
-	}
-
-	return nil
+	return client.Call(method, request, reply)
 }

@@ -8,12 +8,10 @@ import(
 )
 // Stabilize method exported
 func (node *Node) stabilize() error{
-
 	var predecessor string
 	var successors []string
-	var nothing *Nothing
 
-	if err := call(node.Successors[0], "getSuccessors", &nothing, &successors); err != nil{
+	if err := call(node.Successors[0], "Node.GetSuccessors", struct{}{}, &successors); err != nil{
 		log.Printf("could not get successors %v", err)
 	}else{
 		node.Successors[1] = successors[0]
@@ -21,7 +19,7 @@ func (node *Node) stabilize() error{
 	}
 
 	pred := ""
-	call(node.Successors[0], "getPredecessor", &nothing, &pred)
+	call(node.Successors[0], "Node.GetPredecessor", struct{}{}, &pred)
 
 	if between(hashString(node.MyAddress),
 	hashString(pred),
@@ -34,15 +32,15 @@ func (node *Node) stabilize() error{
 	if predecessor != node.MyAddress {
 		//You Only Notify Successor If Current Successor Predecessor Should be You Instead
 		if predecessor < node.MyAddress {
-			if err := call(node.Successors[0], "Node.Notify", node.MyAddress, &nothing); err != nil {
+			if err := call(node.Successors[0], "Node.Notify", node.MyAddress, &struct{}{}); err != nil {
 				log.Printf("notifing the successor failed: %v", err)
 			}
 		}else{
 			node.Successors[0] = predecessor
+			fmt.Println("the nodes successor is predecessor")
 		}
 	}
 
-	log.Printf("Successor Notified: %v", node.Successors[0])
 	return nil
 }
 
@@ -59,12 +57,12 @@ func (node *Node) check_predecessor() error{
 	return nil
 }
 
-func (node *Node) getPredecessor(empty *struct{}, predecessor *string) error{
+func (node *Node) GetPredecessor(empty *struct{}, predecessor *string) error{
 	*predecessor = node.Predecessor
 	return nil
 }
 
-func (node *Node) getSuccessors(empty *struct{}, successors *[]string)error{
+func (node *Node) GetSuccessors(empty *struct{}, successors *[]string)error{
 	*successors = node.Successors[:]
 	return nil
 }
@@ -85,7 +83,7 @@ func (node *Node) find(key string) string{
 	foundNode.Node = node.Successors[0]
 	for !foundNode.Found{
 		if max_steps > 0 {
-			err := call(foundNode.Node, "find_successor", hashString(key), &foundNode)
+			err := call(foundNode.Node, "FindSuccessor", hashString(key), &foundNode)
 			if err == nil{
 				max_steps--
 			}else{
@@ -104,7 +102,9 @@ func (node *Node) fix_fingers() error {
 	}
 	bigInt := jump(node.MyAddress, node.Next)
 	bigString := bigInt.String()
+	println("fingers...", node.MyAddress, node.Next, bigString)
 	address := node.find(bigString)
+	println("fingers #1", node.Next, address)
 	if node.Finger[node.Next] != address && address != ""{
 		fmt.Println("Adding to finger table node: ", node.Next, " with address ", address)
 		node.Finger[node.Next] = address

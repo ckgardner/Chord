@@ -21,7 +21,7 @@ func mainCommands(myNode *Node) {
 		if len(parts) == 0 {
 			continue
 		}
-		var nothing Nothing
+		var nothing *Nothing
 		switch parts[0] {
 
 		case "help":
@@ -61,6 +61,7 @@ func mainCommands(myNode *Node) {
 			var Error error
 			if myNode.Ring == false {
 				server(myNode)
+				myNode.Ring = true
 			} else {
 				log.Printf("Ring already exists: %v\n", Error)
 			}
@@ -123,7 +124,7 @@ func mainCommands(myNode *Node) {
 			}
 
 		case "dump":
-			fmt.Printf("\nNode info\nLocal Node: %v\nSuccessor: %v\nPredecessor: %v\nFingerTable: %v\nBucket: \n", myNode.MyAddress, myNode.Successors[0], myNode.Predecessor, myNode.Finger)
+			fmt.Printf("\nNode info\nLocal Node: %v\nSuccessor: %v\nPredecessor: %v\nFingerTable: %v\nBucket: \n", myNode.MyAddress, myNode.Successors[0], myNode.Predecessor, myNode.Finger[0])
 			for i := range myNode.Bucket {
 				fmt.Printf("\n{%v : %v} \n", i, myNode.Bucket[i])
 			}

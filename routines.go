@@ -4,7 +4,6 @@ import(
     "net"
     "math/big"
     "crypto/sha1"
-    "time"
 )
 
 func getLocalAddress() string {
@@ -65,17 +64,4 @@ func between(start, elt, end *big.Int, inclusive bool) bool {
     } else {
         return start.Cmp(elt) < 0 || elt.Cmp(end) < 0 || (inclusive && elt.Cmp(end) == 0)
     }
-}
-
-func startBackgroundRoutines(node *Node, nothing *Nothing){
-    go func (node *Node) {
-        for {
-            time.Sleep(time.Millisecond * 1333)
-            node.stabilize()
-            time.Sleep(time.Millisecond * 1333)
-            node.check_predecessor()
-            time.Sleep(time.Millisecond * 1333)
-            node.fix_fingers()
-        }
-    }(node)
 }

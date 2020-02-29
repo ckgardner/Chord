@@ -33,7 +33,7 @@ type command struct {
 }
 
 // Finger is an address of a node
-type finger struct {
+type Finger struct {
 }
 
 // FoundNode is a boolean
