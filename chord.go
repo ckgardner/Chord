@@ -17,6 +17,7 @@ func main() {
 	myNode.Ip = getLocalAddress()
 	myNode.Port = ":" + defaultPort
 	myNode.MyAddress = myNode.Ip + myNode.Port
+	myNode.Successors = [3]string{getLocalAddress() + myNode.Port}
 	fmt.Printf("myNode Address: %v", myNode.MyAddress)
 
 	go func(){

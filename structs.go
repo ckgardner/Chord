@@ -6,14 +6,17 @@ import (
 
 // Node has stuff
 type Node struct {
-	MyAddress string
-	Port      string
-	Successor string
-	Bucket    map[string]string
-	Ring      bool
-	kill      chan struct{}
-	Lock      sync.Mutex
-	Ip        string
+	MyAddress 	string
+	Port      	string
+	Finger 		[]string
+	Successors	[3]string
+	Predecessor string
+	Bucket    	map[string]string
+	Ring      	bool
+	kill      	chan struct{}
+	Lock      	sync.Mutex
+	Ip        	string
+	Next		int
 }
 
 // Nothing will do nothing
@@ -31,4 +34,16 @@ type command struct {
 
 // Finger is an address of a node
 type finger struct {
+}
+
+// FoundNode is a boolean
+type FoundNode struct{
+	Found bool
+	Node string
+}
+
+// KeyFound = struct
+type KeyFound struct{
+	Found bool
+	Address string 
 }

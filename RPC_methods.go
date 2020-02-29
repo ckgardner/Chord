@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
-	"time"
+	"log"
+	"math/big"
 )
 
 // Ping methods will all be exported
@@ -38,51 +38,30 @@ func (node *Node) Delete(Key string, res *Nothing) error {
 	return nil
 }
 
-func (node *Node) Notify(predecessor string, response *Nothing) {
-
+// Notify method exported
+func (node *Node) Notify(predecessor string, response *Nothing) error {
 	node.Lock.Lock()
-	for true {
-
-		time.Sleep(time.millisecond * 1333)
-	}
-
-	if node.Predecessor == "" {
-
+	if node.Predecessor == "" || between(hashString(node.Predecessor), hashString(predecessor), hashString(node.MyAddress), false){
 		node.Predecessor = predecessor
 	}
-	node.Lock.Lock()
+	node.Lock.Unlock()
 	return nil
 }
 
-func (node *Node) Stabilize(nothing Nothing, response *Nothing) {
-
-	var predecessor string
-
-	//calling predecessor
-	if error := call(node.Successor, "Node.GetPredecessor", nothing, &predecessor); error != nil {
-		log.printf("failed to get a connection: %v", error)
-		return error
+func (node *Node) find_successor(id *big.Int, res *FoundNode) error{
+	var value string
+	last := value
+	if err := call(node.Successors[0], "Node.Get", id, &value); err != nil{
+		log.Printf("find successor node.get: %v", err)
+	}else{
+		if value != last{
+			res.Found = true
+			res.Node = node.Successors[0]
+			log.Printf("Successor found: %v", node.Successors[0])
+		}else{
+			node.ClosestPrecedingNode(id, &res.Node)
+			log.Printf("else: the next node is: %v", res.Node)
+		}
 	}
-
-	if predeccessor != "" {
-
-		node.Successor = predecessor
-	}
-
-	//calling notify
-	if error := call(node.Successor, "Node.Notify", node.address, &nothing); error != nil {
-		log.printf("notifing the successor failed: %v", error)
-		return error
-	}
-
-	log.printf("Successor Notified: %v", node.Successor)
-	return nil
-}
-
-func (node *Node) GetPredecessor(nothing Nothing, response *string) {
-
-	node.Lock.Lock()
-	*response = node.Predecessor
-	node.Lock.Lock()
 	return nil
 }

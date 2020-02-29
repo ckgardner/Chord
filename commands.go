@@ -48,7 +48,7 @@ func mainCommands(myNode *Node) {
 			} else if len(parts) == 2 {
 				if !myNode.Ring {
 					myNode.Port = ":" + parts[1]
-					myNode.MyAddress = defaultHost + ":" + parts[1]
+					myNode.MyAddress = myNode.Ip + myNode.Port
 					log.Printf("Port is now %v", myNode.MyAddress)
 				} else {
 					log.Printf("Error, this node is already part of the ring")
@@ -61,10 +61,6 @@ func mainCommands(myNode *Node) {
 			var Error error
 			if myNode.Ring == false {
 				server(myNode)
-				if Error = join(myNode, myNode.MyAddress); Error == nil {
-					myNode.Ring = true
-					log.Printf("\nAddress: %v", myNode.MyAddress)
-				}
 			} else {
 				log.Printf("Ring already exists: %v\n", Error)
 			}
@@ -86,15 +82,6 @@ func mainCommands(myNode *Node) {
 			}
 
 		case "get":
-			//	if myNode.Ring == true {
-			//		if len(parts) == 2 {
-			//			fmt.Println("This appears before the get call")
-			//			call(myNode.MyAddress, "myNode.Get", parts[1], myNode.Bucket[parts[1]])
-			//		} else {
-			//			fmt.Println("Get did not work")
-			//		}
-			//	}
-
 			if len(parts) != 2 {
 				log.Printf("Use get <key>")
 				continue
@@ -123,15 +110,6 @@ func mainCommands(myNode *Node) {
 			}
 
 		case "put":
-			//	if myNode.Ring == true {
-			//		if len(parts) == 3 {
-			//			pairval := Pair{parts[1], parts[2]}
-			//			call(myNode.MyAddress, "myNode.Set", pairval, "put successful")
-			//			fmt.Println("you added something to the ring")
-			//		} else {
-			//			fmt.Printf("put did not work")
-			//		}
-			//	}
 			if len(parts) != 3 {
 				log.Printf("put <key> <value>")
 				continue
@@ -145,30 +123,32 @@ func mainCommands(myNode *Node) {
 			}
 
 		case "dump":
-			fmt.Printf("\nNode info\nLocal Node: %v\nSuccessor: %v\nBucket: \n", myNode.MyAddress, myNode.Successor)
+			fmt.Printf("\nNode info\nLocal Node: %v\nSuccessor: %v\nPredecessor: %v\nFingerTable: %v\nBucket: \n", myNode.MyAddress, myNode.Successors[0], myNode.Predecessor, myNode.Finger)
 			for i := range myNode.Bucket {
 				fmt.Printf("\n{%v : %v} \n", i, myNode.Bucket[i])
 			}
 
 		case "quit":
-			if myNode.Successor == myNode.MyAddress {
-				log.Printf("This ring is now shutting down: %v", myNode.MyAddress)
-				myNode.kill <- nothing
-			} else {
-				log.Printf("Killing node: %v", myNode.MyAddress)
-				myNode.kill <- nothing
-			}
+			os.Exit(3)
 
-		case "dumpkey":
-			if len(parts) != 2 {
-				log.Printf("Specify a port number")
-				continue
-			} else {
-				for index := range myNode.Bucket {
-					fmt.Printf("\t%v", index)
+			// if myNode.Successors[0] == myNode.MyAddress {
+			// 	log.Printf("This ring is now shutting down: %v", myNode.MyAddress)
+			// 	myNode.kill <- nothing
+			// } else {
+			// 	log.Printf("Killing node: %v", myNode.MyAddress)
+			// 	myNode.kill <- nothing
+			//}
 
-				}
-			}
+		// case "dumpkey":
+		// 	if len(parts) != 2 {
+		// 		log.Printf("Specify a port number")
+		// 		continue
+		// 	} else {
+		// 		for index := range myNode.Bucket {
+		// 			fmt.Printf("\t%v", index)
+
+		// 		}
+		// 	}
 
 		default:
 			log.Printf("I don't recognize this command")
