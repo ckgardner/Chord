@@ -1,7 +1,7 @@
 package main
 
 import (
-	"sync"
+	//"sync"
 )
 
 // Node has stuff
@@ -14,7 +14,7 @@ type Node struct {
 	Bucket    	map[string]string
 	Ring      	bool
 	kill      	chan struct{}
-	Lock      	sync.Mutex
+	//Lock      	sync.Mutex
 	Ip        	string
 	Next		int
 }

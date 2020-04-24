@@ -18,6 +18,15 @@ func (node *Node) stabilize() error{
 		node.Successors[2] = successors[1]
 	}
 
+	if node.Successors[0] == ""{
+		fmt.Println("Ending node is now", node.MyAddress)
+		node.Successors[0] = node.MyAddress
+	}else{
+		node.Successors[0] = node.Successors[1]
+		node.Successors[1] = node.Successors[2]
+		node.Successors[2] = ""
+	}
+
 	pred := ""
 	call(node.Successors[0], "Node.GetPredecessor", struct{}{}, &pred)
 
@@ -68,10 +77,14 @@ func (node *Node) GetSuccessors(empty *struct{}, successors *[]string)error{
 }
 
 // ClosestPrecedingNode is exported
-func (node *Node) ClosestPrecedingNode(id *big.Int, res *string) error{
-	*res = node.Successors[0]
-	log.Printf("Next node: %v", node.Successors[0])
-	return nil
+func (node *Node) closestPrecedingNode(id *big.Int) string{
+	for i := len(node.Finger) - 1; i > 0; i--{
+		if between(hashString(node.MyAddress), hashString(node.Finger[i]), id, false){
+			return node.Finger[i]
+		}
+	}
+	
+	return node.Successors[0]
 }
 
 func (node *Node) find(key string) string{
@@ -83,14 +96,15 @@ func (node *Node) find(key string) string{
 	foundNode.Node = node.Successors[0]
 	for !foundNode.Found{
 		if max_steps > 0 {
-			err := call(foundNode.Node, "FindSuccessor", hashString(key), &foundNode)
+			err := call(foundNode.Node, "Node.FindSuccessor", hashString(key), &foundNode)
 			if err == nil{
 				max_steps--
 			}else{
 				max_steps = 0
 			}
+		}else{
+			return ""
 		}
-		return ""
 	}
 	return foundNode.Node
 }
@@ -102,11 +116,8 @@ func (node *Node) fix_fingers() error {
 	}
 	bigInt := jump(node.MyAddress, node.Next)
 	bigString := bigInt.String()
-	println("fingers...", node.MyAddress, node.Next, bigString)
-	address := node.find(bigString)
-	println("fingers #1", node.Next, address)
+	address := node.find(bigString) //
 	if node.Finger[node.Next] != address && address != ""{
-		fmt.Println("Adding to finger table node: ", node.Next, " with address ", address)
 		node.Finger[node.Next] = address
 	}
 	for{
@@ -115,7 +126,7 @@ func (node *Node) fix_fingers() error {
 			node.Next = 0
 			return nil
 		}
-		if between(hashString(node.MyAddress), jump(node.MyAddress, node.Next), hashString(address), false){
+		if between(hashString(node.MyAddress), jump(node.MyAddress, node.Next), hashString(address), false) && address != ""{
 			node.Finger[node.Next] = address
 		}else{
 			node.Next--

@@ -83,73 +83,45 @@ func mainCommands(myNode *Node) {
 			}
 
 		case "get":
-			if len(parts) != 2 {
-				log.Printf("Use get <key>")
-				continue
-			}
-			var line string
-			firstLine := line
-			if err := call(myNode.MyAddress, "Node.Get", parts[1], &line); err != nil {
-				log.Printf("calling myNode.Get %v", err)
-			}
-			if line == firstLine {
-				fmt.Println("Not found")
+			if len(parts) == 2 {
+				pair := Pair{parts[1], ""}
+				call(myNode.find(parts[1]), "Node.Get", pair.Key, &pair.Value)
+				println("The value for " + pair.Key + " is " + pair.Value)
 			} else {
-				fmt.Println("Value is: " + line)
+				fmt.Println("Get did not work")
 			}
 
 		case "delete":
-			if len(parts) != 2 {
-				log.Printf("delete <key>")
-				continue
+			if len(parts) == 2 {
+				pair := Pair{parts[1], ""}
+				call(myNode.find(string(parts[1])), "Node.Delete", pair, &pair.Value)
+				fmt.Println("Successfully removed:", pair.Key, pair.Value)
 			}
-			var line string
-			if err := call(myNode.MyAddress, "Node.Delete", parts[1], &line); err != nil {
-				log.Printf("myNode.Delete %v", err)
-			} else {
-				log.Printf("Key deleted")
-			}
-
 		case "put":
-			if len(parts) != 3 {
-				log.Printf("put <key> <value>")
-				continue
-			}
-			pair := Pair{parts[1], parts[2]}
-
-			if err := call(myNode.MyAddress, "Node.Set", pair, &nothing); err != nil {
-				log.Printf("myNode.Set: %v", err)
+			if len(parts) == 3 {
+				pair := Pair{parts[1], parts[2]}
+				call(myNode.find(parts[1]), "Node.Set", pair, &struct{}{})
+				fmt.Println("You put", pair.Key, " & ", pair.Value, "on the ring")
 			} else {
-				log.Printf("This was inserted to the Node: {%v:%v}", pair.Key, pair.Value)
+				fmt.Printf("put is not working")
 			}
 
 		case "dump":
-			fmt.Printf("\nNode info\nLocal Node: %v\nSuccessor: %v\nPredecessor: %v\nFingerTable: %v\nBucket: \n", myNode.MyAddress, myNode.Successors[0], myNode.Predecessor, myNode.Finger[0])
-			for i := range myNode.Bucket {
-				fmt.Printf("\n{%v : %v} \n", i, myNode.Bucket[i])
+			if len(parts) == 1{
+				var dumpNode Node
+				err := call(myNode.MyAddress, "Node.Dump", &struct{}{}, &dumpNode)
+				if err == nil{
+					fmt.Println("Address:	", dumpNode.MyAddress)
+					fmt.Println("Predecessor:	", dumpNode.Predecessor)
+					fmt.Println("Successors:	", dumpNode.Successors)
+					fmt.Println("Bucket:		", dumpNode.Bucket)
+					fmt.Println("Fingertable:	", dumpNode.Finger)
+				}
 			}
 
 		case "quit":
+			call(myNode.Successors[0], "Node.PutAll", myNode.Bucket, &struct{}{})
 			os.Exit(3)
-
-			// if myNode.Successors[0] == myNode.MyAddress {
-			// 	log.Printf("This ring is now shutting down: %v", myNode.MyAddress)
-			// 	myNode.kill <- nothing
-			// } else {
-			// 	log.Printf("Killing node: %v", myNode.MyAddress)
-			// 	myNode.kill <- nothing
-			//}
-
-		// case "dumpkey":
-		// 	if len(parts) != 2 {
-		// 		log.Printf("Specify a port number")
-		// 		continue
-		// 	} else {
-		// 		for index := range myNode.Bucket {
-		// 			fmt.Printf("\t%v", index)
-
-		// 		}
-		// 	}
 
 		default:
 			log.Printf("I don't recognize this command")

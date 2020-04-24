@@ -21,8 +21,7 @@ func main() {
 	myNode.Successors = [3]string{getLocalAddress() + myNode.Port}
 	myNode.Finger = make([]string, 161)
 	myNode.Next = 0
-	fmt.Printf("myNode Address: %v", myNode.MyAddress)
-	println("mynode successor is: " + myNode.Successors[0])
+	fmt.Printf("myNode Address: %v\n", myNode.MyAddress)
 
 	go func () {
         for {

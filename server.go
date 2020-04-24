@@ -33,6 +33,7 @@ func join(myNode *Node, location string) error {
 		return err
 	}
 	myNode.Successors[0] = location
+	call(myNode.Successors[0], "Node.GetAll", location, &struct{}{})
 	return nil
 }
 
